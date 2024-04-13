@@ -12,10 +12,11 @@ unsigned int mbr,
         mar,
         imm,
         pc = 0,
-        reg[8];
+        reg[16];
 unsigned char ir,
         ro0,//reg[ro0]
         ro1,
+        ro2,
         e,
         l,
         g;
@@ -29,51 +30,63 @@ void busca(){
     }
 }
 void decodifica(){
-    ir = mbr >> 24;
-    // decodificaçao de add ate xor
-    if(ir >= add && ir<= xor){
-        ro0 = (mbr & lgcA) >> 21;
-        ro1 = (mbr & lgcB) >> 18;
-    }
+    ir = mbr >> 27;
     // decodificaçao de not
     if(ir == not){
-        ro0 = (mbr & lgcA) >> 21;
+        ro0 = (mbr & lgcA) >> 23;
     }
+    // decodificaçao de movr e cmp
+    if(ir >=movr && ir<=cmp){
+        ro0 = (mbr & lgcA) >> 23;
+        ro1 = (mbr & lgcB) >> 19;
+    }
+    // decodificaçao de add ate xor
+    if(ir >=add && ir <=xor){
+        ro0 = (mbr & lgcA) >> 23;
+        ro1 = (mbr & lgcB) >> 19;
+        ro2 = (mbr & lgcC) >> 15;
+    }
+    //decodificaçao de ld e st
+    if(ir >= ld && ir <= st ){
+        ro0 = (mbr & lgcA) >> 23;
+        mar= ( mbr & maskmar);
+    }
+    //decodificaçao de movil ate rsh
+    if(ir>=movil && ir<=rsh){
+        ro0 = (mbr & lgcA) >> 23;
+        imm = ( mbr & maskmar);
+    }
+    
     // decodificaçao de je ate jmp
     if(ir>=je && ir<=jmp){
         mar= ( mbr & maskmar);
     }
-    //decodificaçao de ld e st
-    if(ir >= ld && ir <= st ){
-        ro0 = (mbr & lgcA) >> 21;
+     // decodificaçao de ldbo ate stbo
+    if(ir>=ldbo && ir<=stbo){
+        ro0 = (mbr & lgcA) >> 23;
+        ro1 = (mbr & lgcB) >> 19;
         mar= ( mbr & maskmar);
     }
-    //decodificaçao de movi ate rsh
-    if(ir>= movi && ir<=rsh){
-        ro0 = (mbr & lgcA) >> 21;
-        imm = ( mbr & maskmar);
-    }
-}
-void executa() {
+}void executa() {
     if (ir == hlt){
     }
     if (ir == nop) {
         pc = pc + 4;
     }
     if (ir == add) {
-        reg[ro0] = reg[ro0] + reg[ro1];
+        reg[ro0] = reg[ro1] + reg[ro2];
         pc += 4;
     }
     if (ir == sub) {
-        reg[ro0] = reg[ro0] - reg[ro1];
+        reg[ro0] = reg[ro1] - reg[ro2];
         pc += 4;
     }
     if (ir == mul) {
-        reg[ro0] = reg[ro0] * reg[ro1];
+        reg[ro0] = reg[ro1] * reg[ro2];
         pc += 4;
     }
     if (ir == div) {
-        reg[ro0] = reg[ro0] / reg[ro1];
+        reg[ro0] = reg[ro1] / reg[ro2];
         pc += 4;
     }
     if (ir == cmp) {
@@ -99,15 +112,15 @@ void executa() {
         pc += 4;
     }
     if (ir == and) {
-        reg[ro0] = reg[ro0] & reg[ro1];
+        reg[ro0] = reg[ro1] & reg[ro2];
         pc += 4;
     }
     if (ir == or) {
-        reg[ro0] = reg[ro0] | reg[ro1];
+        reg[ro0] = reg[ro1] | reg[ro2];
         pc += 4;
     }
     if (ir == xor) {
-        reg[ro0] = reg[ro0] ^ reg[ro1];
+        reg[ro0] = reg[ro1] ^ reg[ro2];
         pc += 4;
     }
     if (ir == not) {
@@ -204,7 +217,6 @@ void executa() {
         pc += 4;
     }
 }
-
 int criar_palavra(char instrucao[], unsigned int reg1, unsigned int reg2, unsigned int menOuImm, int inicio)
 {
     int palavra;
