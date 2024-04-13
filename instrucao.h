@@ -1,4 +1,3 @@
-
 #define hlt 0x00
 #define nop 0x01
 #define not 0x02
@@ -31,8 +30,8 @@
 #define jge 0x1d 
 #define jmp 0x1e
 // Mascaras
-#define lgcA 0x007fffff
-#define lgcB 0x0000000f
-#define lgcC 0x0000001e
+#define lgcA 0x0000000f
+#define lgcB 0x000000ff
+#define lgcC 0x00000fff
 // mascara da memory adress
-#define maskmar 0x001fffff
+#define maskmar 0x007fffff

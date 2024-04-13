@@ -45,18 +45,34 @@ void decodifica(){
         ro0 = (mbr & lgcA) >> 23;
         ro1 = (mbr & lgcB) >> 19;
         ro2 = (mbr & lgcC) >> 15;
+        /*else if(ir >= 7 && <=13){ //mnemonicos add, sub, mul, div, and or e xor
+        ro0 = (mbr & lgcA) >> 23;
+        ro1 = (mbr & lgcB) >> 19;
+        ro2 = (mbr & lgcC) >> 15;//confirmar sobre lgcB com o Eduardo
+
+    }*/
     }
     //decodificaçao de ld e st
     if(ir >= ld && ir <= st ){
-        ro0 = (mbr & lgcA) >> 23;
-        mar= ( mbr & maskmar);
+        /*if (ir >= 14 && <=15){ //mnemonicos ld e st
+        mar=mbr & 0x7fffff;
+        ro0=(mbr>>23)&0xf;
+
+    }*/
+       /*
+        mar= ( mbr &lgcA);
+        ro0 = (mbr>> 23) &maskmar;
+        */
+        ro0 = (mbr>> 23) &lgcA;
+        mar= ( mbr &maskmar);
+
     }
     //decodificaçao de movil ate rsh
     if(ir>=movil && ir<=rsh){
         ro0 = (mbr & lgcA) >> 23;
         imm = ( mbr & maskmar);
     }
-    
+
     // decodificaçao de je ate jmp
     if(ir>=je && ir<=jmp){
         mar= ( mbr & maskmar);
@@ -180,18 +196,20 @@ void decodifica(){
         reg[ro0] = mbr;
         pc += 4;
     }
+
     if (ir == st) {
         mbr =  reg[ro0];
-        memoria[mar++] = mbr >> 24;
+        memoria[mar++] = mbr >>24;
         memoria[mar++] = (mbr & 0x00ff0000) >> 16;
         memoria[mar++] = (mbr & 0x0000ff00) >> 16;
         memoria[mar] = mbr & 0x000000ff;
+
         pc += 4;
     }
-    if (ir == movi){
+    /*if (ir == movi){
         reg[ro0] = imm;
         pc += 4;
-    }
+    }*/
     if (ir == addi){
         reg[ro0] = reg[ro0] + imm;
         pc += 4;
@@ -216,6 +234,24 @@ void decodifica(){
         reg[ro0]= (reg[ro0] >> imm);
         pc += 4;
     }
+     if(ir == movil){
+            // Executa a lógica para movil
+        reg[ro0] = (reg[ro0] & 0xFFFF0000) | (imm & 0x0000FFFF);
+        pc += 4;
+    }
+    if(ir == movih){
+            // Executa a lógica para movih
+        reg[ro0] = (reg[ro0] & 0x0000FFFF) | (imm << 16);
+        pc += 4;
+    }
+    if (ir==ldbo){
+        ro0=*(memoria[mar]+ro1);
+        pc += 4;
+    }
+     if (ir==ldbo){
+        *(memoria[mar]+ro1)=ro0;
+        pc += 4;
+    }
 }
 int criar_palavra(char instrucao[], unsigned int reg1, unsigned int reg2, unsigned int menOuImm, int inicio)
 {
@@ -224,6 +260,9 @@ int criar_palavra(char instrucao[], unsigned int reg1, unsigned int reg2, unsign
         palavra = ld;
         palavra = (palavra << 3) | reg1;
         palavra = (palavra << 21) | menOuImm;
+        /*if (ir >= 14 && <=15){ //mnemonicos ld e st
+        mar=mbr & 0x7fffff;
+        ro0=(mbr>>23)&0xf;*/
     }else if(strcmp(instrucao,"st")== 0){
         palavra = st;
         palavra = (palavra << 3) | reg1;
