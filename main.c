@@ -507,7 +507,7 @@ int main() {
         busca();
         decodifica();
         executa();
-        for (int i=0; i < 8; i++) {
+        for (int i=0; i < 16; i++) {
             printf("Registrador %d tem o valor %x\n", i, reg[i]);
         }
         printf("---------------Memorias-----------------\n");
@@ -517,7 +517,7 @@ int main() {
                 printf("\n");
             }
         }
-        printf("\nPressione entera para executar o proximo ciclo de instrucao\n");
+        printf("\nPressione enter para executar o proximo ciclo de instrucao\n");
         getchar();
     }
 }
