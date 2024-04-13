@@ -12,7 +12,8 @@ unsigned int mbr,
         mar,
         imm,
         pc = 0,
-        reg[16];
+        reg[16], 
+        endereco_efetivo;
 unsigned char ir,
         ro0,//reg[ro0]
         ro1,
@@ -244,13 +245,31 @@ void decodifica(){
         reg[ro0] = (reg[ro0] & 0x0000FFFF) | (imm << 16);
         pc += 4;
     }
-    if (ir==ldbo){
-        ro0=*(memoria[mar]+ro1);
+
+    if (ir == ldbo) {
+        // LOAD VIA BASE+OFFSET: rX = * (M[Z] + rY)
+        // Calcula o endereço efetivo somando o conteúdo do registrador rY ao valor imediato M[Z]
+         endereco_efetivo = reg[ro1] + mar;
+        // Carrega o valor da memória no registrador rX
+        mbr = memoria[endereco_efetivo++];
+        for (int i = 1; i < 4; i++) {
+            mbr = (mbr << 8) | memoria[endereco_efetivo++];
+        }
+        reg[ro0] = mbr;
         pc += 4;
     }
-     if (ir==ldbo){
-        *(memoria[mar]+ro1)=ro0;
+    if (ir == stbo) {
+        // STORE VIA BASE+OFFSET: * (M[Z] + rY) = rX
+        // Calcula o endereço efetivo somando o conteúdo do registrador rY ao valor imediato M[Z]
+         endereco_efetivo = reg[ro1] + mar;
+        // Armazena o valor do registrador rX na memória
+        mbr = reg[ro0];
+        memoria[endereco_efetivo++] = mbr >> 24;
+        memoria[endereco_efetivo++] = (mbr & 0x00FF0000) >> 16;
+        memoria[endereco_efetivo++] = (mbr & 0x0000FF00) >> 8;
+        memoria[endereco_efetivo] = mbr & 0x000000FF;
         pc += 4;
+    }
     }
 }
 int criar_palavra(char instrucao[], unsigned int reg1, unsigned int reg2, unsigned int menOuImm, int inicio)
